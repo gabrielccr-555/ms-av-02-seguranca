@@ -1,0 +1,28 @@
+# Prometheus + Grafana para observabilidade do servico de login.
+# A aplicacao Spring Boot roda fora do Docker (porta 8080 do host).
+services:
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus-config.yml:/etc/prometheus/prometheus.yml
+    extra_hosts:
+      # permite ao container acessar a aplicacao no host (necessario no Linux)
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
